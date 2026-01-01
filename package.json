@@ -6,12 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@azure/web-pubsub": "^1.2.0",
+    "@azure/web-pubsub-client": "^1.0.2",
+    "@azure/web-pubsub-express": "^1.0.6",
+    "@prisma/client": "^7.2.0",
+    "hono": "^4.11.3",
     "next": "16.1.1",
+    "prisma": "^7.2.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zod": "^4.3.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
