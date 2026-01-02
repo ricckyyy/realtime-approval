@@ -27,33 +27,47 @@ Azure Web PubSubを使ったリアルタイム承認システムのデモアプ�
 npm install
 ```
 
-### 2. Azure Web PubSubの設定
+**注**: `npm install`を実行すると、Prismaクライアントが自動的に生成されます（postinstallスクリプト）。
 
-詳細は[AZURE_SETUP.md](./AZURE_SETUP.md)を参照してください。
+### 2. 環境変数の設定
 
-簡単な手順:
-1. [Azure Portal](https://portal.azure.com/)でWeb PubSubリソースを作成
-2. 接続文字列をコピー
-3. `.env.local`に設定
+`.env.example`をコピーして`.env.local`ファイルを作成:
 
-### 3. 環境変数の設定
+```bash
+cp .env.example .env.local
+```
 
-`.env.local`ファイルを作成:
+または手動で`.env.local`ファイルを作成:
 
 ```env
 # Database
 DATABASE_URL="file:./dev.db"
 
 # Azure Web PubSub
-AZURE_PUBSUB_CONNECTION_STRING="your_connection_string_here"
+AZURE_PUBSUB_CONNECTION_STRING="Endpoint=https://your-pubsub-name.webpubsub.azure.com;AccessKey=your-access-key;Version=1.0;"
 AZURE_PUBSUB_HUB_NAME="approval"
 ```
+
+### 3. Azure Web PubSubの設定（オプション）
+
+リアルタイム機能を使用する場合は、Azure Web PubSubの設定が必要です。
+
+詳細は[AZURE_SETUP.md](./AZURE_SETUP.md)を参照してください。
+
+簡単な手順:
+1. [Azure Portal](https://portal.azure.com/)でWeb PubSubリソースを作成
+2. 接続文字列をコピー
+3. `.env.local`の`AZURE_PUBSUB_CONNECTION_STRING`に設定
+
+**注**: Azure PubSubの設定なしでも、基本的な機能（リクエストの作成・表示）は動作します。
 
 ### 4. データベースのセットアップ
 
 ```bash
-npm run db:migrate
+npm run db:push
 ```
+
+このコマンドでSQLiteデータベースが作成され、スキーマが適用されます。
 
 ### 5. 開発サーバーの起動
 
