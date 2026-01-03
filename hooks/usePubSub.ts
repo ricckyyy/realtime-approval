@@ -1,17 +1,26 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { WebPubSubClient } from '@azure/web-pubsub-client'
+import type { PubSubMessage } from '@/lib/pubsub'
 
-interface PubSubMessage {
-  type: string
-  data: any
+function isPubSubMessage(data: unknown): data is PubSubMessage {
+  if (typeof data !== 'object' || data === null) {
+    return false
+  }
+  const obj = data as Record<string, unknown>
+  return (
+    (obj.type === 'new_request' || obj.type === 'status_update') &&
+    typeof obj.data === 'object' &&
+    obj.data !== null
+  )
 }
 
 export function usePubSub(userId: string, groups: string[] = []) {
   const [client, setClient] = useState<WebPubSubClient | null>(null)
   const [connected, setConnected] = useState(false)
   const [messages, setMessages] = useState<PubSubMessage[]>([])
+  const groupsKey = useMemo(() => groups.join(','), [groups])
 
   useEffect(() => {
     let pubsubClient: WebPubSubClient | null = null
@@ -35,7 +44,8 @@ export function usePubSub(userId: string, groups: string[] = []) {
           setConnected(true)
           
           // グループに参加
-          groups.forEach((group) => {
+          const groupList = groups
+          groupList.forEach((group) => {
             pubsubClient?.joinGroup(group)
           })
         })
@@ -47,8 +57,12 @@ export function usePubSub(userId: string, groups: string[] = []) {
         
         pubsubClient.on('group-message', (e) => {
           console.log('Received message:', e.message.data)
-          const message = e.message.data as PubSubMessage
-          setMessages((prev) => [...prev, message])
+          const data = e.message.data
+          if (isPubSubMessage(data)) {
+            setMessages((prev) => [...prev, data])
+          } else {
+            console.warn('Invalid message format:', data)
+          }
         })
         
         await pubsubClient.start()
@@ -65,7 +79,7 @@ export function usePubSub(userId: string, groups: string[] = []) {
         pubsubClient.stop()
       }
     }
-  }, [userId, groups.join(',')])
+  }, [userId, groupsKey, groups])
 
   const clearMessages = useCallback(() => {
     setMessages([])
