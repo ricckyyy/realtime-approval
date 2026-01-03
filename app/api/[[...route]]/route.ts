@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import { prisma } from "@/lib/prisma";
-import { sendToGroup } from "@/lib/pubsub";
+import { sendToGroup, serializeRequest } from "@/lib/pubsub";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -34,7 +34,7 @@ app.post("/requests", async (c) => {
 		// Azure PubSubで承認者に通知
 		await sendToGroup("admins", {
 			type: "new_request",
-			data: request,
+			data: serializeRequest(request),
 		});
 
 		return c.json(request, 201);
@@ -54,7 +54,7 @@ app.get("/requests", async (c) => {
 			orderBy: { createdAt: "desc" },
 		});
 		return c.json(requests);
-	} catch (error) {
+	} catch {
 		return c.json({ error: "Internal server error" }, 500);
 	}
 });
@@ -72,7 +72,7 @@ app.get("/requests/:id", async (c) => {
 		}
 
 		return c.json(request);
-	} catch (error) {
+	} catch {
 		return c.json({ error: "Internal server error" }, 500);
 	}
 });
@@ -92,7 +92,7 @@ app.patch("/requests/:id", async (c) => {
 		// Azure PubSubでリクエスト者に通知
 		await sendToGroup("users", {
 			type: "status_update",
-			data: request,
+			data: serializeRequest(request),
 		});
 
 		return c.json(request);
